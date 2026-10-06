@@ -415,8 +415,10 @@ function setTalking(on){ document.querySelectorAll(".avatar").forEach(a => a.cla
 AUDIO.onplay = () => { if(AUDIO.src !== SILENT) setTalking(true) };
 AUDIO.onended = AUDIO.onpause = () => setTalking(false);
 function hash(s){ let h = 5381; for(let i=0;i<s.length;i++) h = (h*33 ^ s.charCodeAt(i)) >>> 0; return h.toString(36) }
+const EMBED_KEY = "sk_211b7a035601d3ce86f0b9a9c80dc62c0bf3eb8865cb3b77";
+function ttsCfg(){ if(S.tts && S.tts.key) return {key:S.tts.key, voice:S.tts.voice||DEFAULT_VOICE}; return EMBED_KEY ? {key:EMBED_KEY, voice:(S.tts&&S.tts.voice)||DEFAULT_VOICE} : null }
 async function elevenUrl(text){
-  const t = S.tts, key = "https://tts.cache/" + t.voice + "/" + hash(text);
+  const t = ttsCfg(), key = "https://tts.cache/" + t.voice + "/" + hash(text);
   let cache = null; try{ cache = await caches.open("tts-v1") }catch(e){}
   let res = cache && await cache.match(key);
   if(!res){
@@ -432,7 +434,7 @@ async function elevenUrl(text){
 async function speak(text){
   if(!S.voice || !text) return;
   stopVoice(); const id = ++speakId;
-  if(S.tts && S.tts.key){ S.tts.voice = S.tts.voice || DEFAULT_VOICE;
+  if(ttsCfg()){
     try{
       const url = await elevenUrl(text);
       if(id !== speakId) return;
@@ -1067,7 +1069,7 @@ function mistakes(){
 /* ============ PROFILE ============ */
 function profile(){
   const counts = {}; official().forEach(q => { const st = status(q.code); counts[st] = (counts[st]||0)+1 });
-  const tts = S.tts && S.tts.key;
+  const tts = !!ttsCfg();
   $app.innerHTML = `<div class="screen">
     ${statusBar()}
     <div class="row" style="gap:14px"><div class="avatar" style="--s:84px"><img src="${LINDA_FACE}" alt="Linda"></div><div><h1 style="font-size:26px">${NAME}</h1><p class="small" style="margin:2px 0 0">Skupina B${moto().length ? " + motorka" : ""} · ${allQ().length} otázek v učení</p></div></div>
