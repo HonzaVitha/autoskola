@@ -269,6 +269,8 @@ function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || null }catc
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)) }catch(e){} }
 let S = load() || {q:{}, xp:0, streak:0, lastDay:null, today:{day:null, xp:0}, goal:30, voice:true, admin:{learning:{}, inactive:{}}, exams:[]};
 S.admin = S.admin || {learning:{}, inactive:{}};
+// testing devices: open the app once with ?test and this phone stops sending reports to Honza (?ostra turns them back on)
+(() => { const q = new URLSearchParams(location.search); if(q.has("test")) S.noReport = true; if(q.has("ostra")) S.noReport = false; try{ localStorage.setItem("autoskola-linda-v1", JSON.stringify(S)) }catch(e){} })();
 
 const todayStr = () => new Date().toISOString().slice(0,10);
 
@@ -1155,6 +1157,7 @@ function profile(){
       <span class="label">O aplikaci</span>
       <p style="margin:0">Skutečné otázky Ministerstva dopravy z Elektronického věstníku eTesty (verze ${esc(SOURCE_META.bulletinVersion)}) s oficiálními kódy. Obrázky jsou z oficiálního PDF věstníku, videa se načítají přímo z eTesty.</p>
       <p class="note" style="margin:0">Znění otázek i správné odpovědi jsou z oficiálního PDF věstníku MD (2. 4. 2026) a nikdo je neupravoval. Vysvětlení, nápovědy a pomůcky napsala AI ke každé otázce zvlášť. Zatím je nezkontroloval instruktor autoškoly, při nejasnosti platí oficiální odpověď.${missingCount() ? ` Zatím chybí ${missingCount()} otázek s obrázkem.` : ""}</p>
+      ${S.noReport ? `<p class="small" style="margin:0"><b>Testovací režim:</b> z tohoto telefonu se zprávy Honzovi neposílají.</p>` : ""}
       <p class="small" style="margin:0">Honza dostává do telefonu krátké zprávy o tvém pokroku (dokončené lekce a testy). Postup se ukládá jen v tomto telefonu. Zdroj: <a href="${esc(SOURCE_META.url)}" target="_blank" rel="noopener">eTesty MD</a></p>
     </div>
     <div class="card stack">
